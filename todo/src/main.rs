@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 #[command(name = "todo", about = "A simple to-do list CLI", version = "1.0")]
 struct Cli {
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 }
 
 #[derive(Subcommand)]
@@ -92,22 +92,26 @@ fn main() -> io::Result<()> {
 
     let mut todo_list = TodoList::load(&filename)?;
 
-    match cli.command {
-        Commands::Add(args) => {
-            todo_list.add(args.item);
-            println!("Item added.");
-        },
-        Commands::Rm(args) => {
-            if todo_list.remove(&args.item) {
-                println!("Item removed.");
-            } else {
-                println!("Item not found.");
-            }
-        },
-        Commands::List => {
-            println!("Current to-do list:");
-            todo_list.list();
-        },
+    if let Some(command) = cli.command {
+        match command {
+            Commands::Add(args) => {
+                todo_list.add(args.item);
+                println!("Item added.");
+            },
+            Commands::Rm(args) => {
+                if todo_list.remove(&args.item) {
+                    println!("Item removed.");
+                } else {
+                    println!("Item not found.");
+                }
+            },
+            Commands::List => {
+                println!("Current to-do list:");
+                todo_list.list();
+            },
+        }
+    } else {
+        println!("No command provided.");
     }
 
     todo_list.save(&filename)?;
